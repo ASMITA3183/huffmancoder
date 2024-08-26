@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Huffman Encoding/Decoding</title>
+</head>
+<body>
+    <h1>Huffman Encoding/Decoding with WebAssembly</h1>
+    <input type="file" id="fileInput" />
+    <button onclick="encode()">Encode</button>
+    <button onclick="decode()">Decode</button>
+    <a id="downloadLink" style="display:none">Download Result</a>
+    //<pre id="output"></pre>
+
+    <script src="huffman.js"></script>
+    <script>
+        let fileContent = '';
+
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                fileContent = e.target.result;
+            };
+            reader.readAsText(file);
+        });
+
+        function encode() {
+            if (!fileContent) {
+                alert('Please upload a file first.');
+                return;
+            }
+            const result = Module.ccall('encode', 'string', ['string'], [fileContent]);
+            displayResult(result, 'encoded');
+        }
+
+        function decode() {
+            if (!fileContent) {
+                alert('Please upload a file first.');
+                return;
+            }
+            const result = Module.ccall('decode', 'string', ['string'], [fileContent]);
+            displayResult(result, 'decoded');
+        }
+
+        function displayResult(result, type) {
+            const blob = new Blob([result], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = url;
+            downloadLink.download = `huffman_${type}.txt`;
+            downloadLink.textContent = `Download ${type} file`;
+            downloadLink.style.display = 'block';
+            //document.getElementById('output').textContent = result;
+        }
+    </script>
+</body>
+</html>
